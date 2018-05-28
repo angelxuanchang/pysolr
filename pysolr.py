@@ -817,6 +817,16 @@ class Solr(object):
                 doc_elem.set('boost', force_unicode(value))
                 continue
 
+            # Add ability to clear out a field
+            if fieldUpdates and key in fieldUpdates:
+                isEmpty = self._is_null_value(value) or value == []
+                isSet = fieldUpdates[key] == 'set'
+                if isEmpty and isSet:
+                    attrs = {'name': key, 'update': 'set', 'null': 'true'}
+                    field = ElementTree.Element('field', **attrs)
+                    doc_elem.append(field)
+                    continue
+
             # To avoid multiple code-paths we'd like to treat all of our values as iterables:
             if isinstance(value, (list, tuple, set)):
                 values = value
